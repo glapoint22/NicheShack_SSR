@@ -92,6 +92,15 @@ namespace Website.Repositories
 
 
 
+        public async Task<IEnumerable<T>> GetCollection()
+        {
+            return await context.Set<T>().ToListAsync();
+                
+        }
+
+
+
+
         // Add
         public void Add(T entity)
         {

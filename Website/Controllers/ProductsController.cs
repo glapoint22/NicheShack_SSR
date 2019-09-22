@@ -42,29 +42,6 @@ namespace Website.Controllers
 
 
 
-
-        // ..................................................................................Get Write Review Product.....................................................................
-        [Route("WriteReviewProduct")]
-        [HttpGet]
-        public async Task<ActionResult> GetWriteReviewProduct(string id)
-        {
-            // This data is used to showcase the product when writing a review
-            return Ok(await unitOfWork.Products.Get(x => x.Id == id, x => new
-            {
-                id = x.Id,
-                title = x.Title,
-                image = x.Image
-            }));
-        }
-
-
-
-
-
-
-
-
-
         // ..................................................................................Get Product Detail.....................................................................
         [Route("ProductDetail")]
         [HttpGet]

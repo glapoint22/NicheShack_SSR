@@ -42,12 +42,43 @@ namespace Website.Controllers
         [Route("Register")]
         public async Task<ActionResult> Register(Account account)
         {
-            // Add the new customer to the database
-            IdentityResult result = await userManager.CreateAsync(account.CreateCustomer(), account.Password);
+            Customer customer = account.CreateCustomer();
 
-            // The new customer was successfully added to the database 
+            // Add the new customer to the database
+            IdentityResult result = await userManager.CreateAsync(customer, account.Password);
+
+            
             if (result.Succeeded)
             {
+                // Create the new list and add it to the database
+                List newList = new List
+                {
+                    Id = Guid.NewGuid().ToString("N").ToUpper(),
+                    Name = "Wish List",
+                    Description = string.Empty,
+                    CollaborateId = Guid.NewGuid().ToString("N").ToUpper()
+                };
+
+                unitOfWork.Lists.Add(newList);
+
+
+                // Set the owner as the first collaborator of the list
+                ListCollaborator collaborator = new ListCollaborator
+                {
+                    Id = Guid.NewGuid(),
+                    CustomerId = customer.Id,
+                    ListId = newList.Id,
+                    IsOwner = true
+                };
+
+                unitOfWork.Collaborators.Add(collaborator);
+
+
+                // Save all updates to the database
+                await unitOfWork.Save();
+
+
+                // The new customer was successfully added to the database
                 return Ok();
             }
             else

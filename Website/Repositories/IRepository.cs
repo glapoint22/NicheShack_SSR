@@ -21,7 +21,8 @@ namespace Website.Repositories
         Task<IEnumerable<TOut>> GetCollection<TOut>(ISelect<T, TOut> dto) where TOut : class;
         Task<IEnumerable<TOut>> GetCollection<TOut>(Expression<Func<T, bool>> predicate, ISelect<T, TOut> dto) where TOut : class;
         Task<IEnumerable<TOut>> GetCollection<TOut>(Expression<Func<T, bool>> predicate, Expression<Func<T, TOut>> select);
-        
+
+        Task<IEnumerable<T>> GetCollection();
 
         // Add
         void Add(T entity);

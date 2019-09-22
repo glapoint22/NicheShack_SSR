@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -82,6 +83,34 @@ namespace Website.Controllers
 
 
 
+        // ..................................................................................Write Review.....................................................................
+        [Route("WriteReview")]
+        [HttpGet]
+        [Authorize(Policy = "Account Policy")]
+        public async Task<ActionResult> WriteReview(string productId)
+        {
+            // Get the customer Id from the access token
+            string customerId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            // Get the user name for the review
+            string userName = await unitOfWork.Customers.Get(x => x.Id == customerId, x => x.ReviewName);
+
+            return Ok(new
+            {
+                // This will be used to showcase the product when writing the review
+                product = await unitOfWork.Products.Get(x => x.Id == productId, x => new
+                {
+                    id = x.Id,
+                    title = x.Title,
+                    image = x.Image
+                }),
+                userName
+            });
+        }
+
+
+
+
 
 
         // .......................................................................................Post Review...................................................................
@@ -93,6 +122,12 @@ namespace Website.Controllers
             {
                 return BadRequest(ModelState);
             }
+
+            // Get the customer Id from the access token
+            string customerId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            // Assign the customer to the review
+            review.CustomerId = customerId;
 
             // Add the new review
             unitOfWork.ProductReviews.Add(review);
@@ -172,6 +207,37 @@ namespace Website.Controllers
 
             return BadRequest();
 
+        }
+
+
+
+        // ..................................................................................Update Review Name.....................................................................
+        [HttpPut]
+        [Route("UpdateReviewName")]
+        [Authorize(Policy = "Account Policy")]
+        public async Task<ActionResult> UpdateReviewName(string updatedReviewName)
+        {
+            // Get the customer from the database based on the customer id from the claims via the access token
+            Customer customer = await unitOfWork.Customers.Get(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            // If the customer is found, update the review name (user name for reviews)
+            if (customer != null)
+            {
+                customer.ReviewName = updatedReviewName;
+
+                // Update the name in the database
+                unitOfWork.Customers.Update(customer);
+                await unitOfWork.Save();
+
+                //Return with the new updated user name
+                return Ok(new
+                {
+                    userName = customer.ReviewName
+
+                });
+            }
+
+            return BadRequest();
         }
     }
 }

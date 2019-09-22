@@ -76,6 +76,10 @@ namespace Website.Models
                 entity.Property(e => e.LastName)
                     .IsRequired()
                     .IsUnicode(false);
+
+                entity.Property(e => e.ReviewName)
+                    .IsRequired()
+                    .IsUnicode(false);
             });
 
 
@@ -451,12 +455,12 @@ namespace Website.Models
                     .IsRequired()
                     .IsUnicode(false);
 
-                entity.Property(e => e.Title)
-                    .HasMaxLength(255)
-                    .IsUnicode(false)
-                    .IsRequired();
+                entity.Property(e => e.CustomerId)
+                    .HasMaxLength(10)
+                    .IsRequired()
+                    .IsUnicode(false);
 
-                entity.Property(e => e.Username)
+                entity.Property(e => e.Title)
                     .HasMaxLength(255)
                     .IsUnicode(false)
                     .IsRequired();
@@ -475,6 +479,11 @@ namespace Website.Models
                     .WithMany(p => p.ProductReviews)
                     .HasForeignKey(d => d.ProductId)
                     .HasConstraintName("FK_ProductReviews_Products");
+
+                entity.HasOne(d => d.Customer)
+                    .WithMany(p => p.ProductReviews)
+                    .HasForeignKey(d => d.CustomerId)
+                    .HasConstraintName("FK_ProductReviews_Customers");
             });
 
 

@@ -53,7 +53,7 @@ namespace Website.Classes
                 Title = x.Title,
                 ProductId = x.ProductId,
                 Rating = x.Rating,
-                Username = x.Username,
+                Username = x.Customer.ReviewName,
                 Date = x.Date,
                 IsVerified = x.IsVerified,
                 Text = x.Text,

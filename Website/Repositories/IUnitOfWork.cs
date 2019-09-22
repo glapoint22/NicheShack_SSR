@@ -19,6 +19,7 @@ namespace Website.Repositories
         IRepository<ProductPricePoint> PricePoints { get; }
         IRepository<RefreshToken> RefreshTokens { get; }
         IRepository<ListCollaborator> Collaborators { get; }
+        IRepository<Customer> Customers { get; }
 
 
         Task<int> Save();

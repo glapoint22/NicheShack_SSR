@@ -16,7 +16,6 @@ namespace Website.Classes
         public string Password { get; set; }
 
 
-
         // ..................................................................................Create Customer.....................................................................
         public Customer CreateCustomer()
         {
@@ -26,7 +25,8 @@ namespace Website.Classes
                 UserName = Guid.NewGuid().ToString("N"),
                 Email = Email,
                 FirstName = FirstName,
-                LastName = LastName
+                LastName = LastName,
+                ReviewName = FirstName
             };
         }
     }
