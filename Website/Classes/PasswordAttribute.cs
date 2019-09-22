@@ -12,7 +12,7 @@ namespace Website.Classes
                 return ValidationResult.Success;
             }
 
-            return new ValidationResult("Invalid password.");
+            return new ValidationResult("Passwords must be at least 6 characters.");
         }
     }
 }

@@ -5,13 +5,16 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 using Website.Classes;
+using Website.Interfaces;
 using Website.Models;
 using Website.Repositories;
 
@@ -39,33 +42,27 @@ namespace Website.Controllers
         [Route("Register")]
         public async Task<ActionResult> Register(Account account)
         {
-            // Make sure the account data is valid
-            if (ModelState.IsValid)
+            // Add the new customer to the database
+            IdentityResult result = await userManager.CreateAsync(account.CreateCustomer(), account.Password);
+
+            // The new customer was successfully added to the database 
+            if (result.Succeeded)
             {
-                // Add the new customer to the database
-                IdentityResult result = await userManager.CreateAsync(account.CreateCustomer(), account.Password);
-
-                // The new customer was successfully added to the database 
-                if (result.Succeeded)
-                {
-                    return Ok();
-                }
-                else
-                {
-                    // There was a problem adding the customer to the database. Return with errors
-                    foreach (IdentityError error in result.Errors)
-                    {
-                        if (error.Code == "DuplicateEmail")
-                        {
-                            error.Description = "The email address, \"" + account.Email.ToLower() + "\", already exists with another Niche Shack account. Please use another email address.";
-                        }
-                        ModelState.AddModelError(error.Code, error.Description);
-                    }
-                    return Conflict(ModelState);
-                }
+                return Ok();
             }
-
-            return BadRequest();
+            else
+            {
+                // There was a problem adding the customer to the database. Return with errors
+                foreach (IdentityError error in result.Errors)
+                {
+                    if (error.Code == "DuplicateEmail")
+                    {
+                        error.Description = "The email address, \"" + account.Email.ToLower() + "\", already exists with another Niche Shack account. Please use another email address.";
+                    }
+                    ModelState.AddModelError(error.Code, error.Description);
+                }
+                return Conflict(ModelState);
+            }
         }
 
 
@@ -94,7 +91,7 @@ namespace Website.Controllers
                 };
 
                 // Return with the token data
-                return Ok(await GenerateTokenData(customer, claims));
+                return Ok(await GenerateTokenData<TokenDataDetail>(customer, claims));
             }
 
             return Unauthorized();
@@ -109,32 +106,30 @@ namespace Website.Controllers
         [Authorize(Policy = "Account Policy")]
         public async Task<ActionResult> UpdateCustomerName(UpdatedCustomerName updatedCustomerName)
         {
-            if (ModelState.IsValid)
+            // Get the customer from the database based on the customer id from the claims via the access token
+            Customer customer = await userManager.FindByIdAsync(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            // If the customer is found, update his/her name
+            if (customer != null)
             {
-                // Get the customer from the database based on the customer id from the claims via the access token
-                Customer customer = await userManager.FindByIdAsync(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                customer.FirstName = updatedCustomerName.FirstName;
+                customer.LastName = updatedCustomerName.LastName;
 
-                // If the customer is found, update his/her name
-                if (customer != null)
+                // Update the name in the database
+                IdentityResult result = await userManager.UpdateAsync(customer);
+
+                // If succeeded, return with the new updated name
+                if (result.Succeeded)
                 {
-                    customer.FirstName = updatedCustomerName.FirstName;
-                    customer.LastName = updatedCustomerName.LastName;
-
-                    // Update the name in the database
-                    IdentityResult result = await userManager.UpdateAsync(customer);
-
-                    // If succeeded, return with the new updated name
-                    if (result.Succeeded)
+                    return Ok(new CustomerDTO
                     {
-                        return Ok(new CustomerDTO
-                        {
-                            FirstName = customer.FirstName,
-                            LastName = customer.LastName,
-                            Email = customer.Email
-                        });
-                    }
+                        FirstName = customer.FirstName,
+                        LastName = customer.LastName,
+                        Email = customer.Email
+                    });
                 }
             }
+
 
             return BadRequest();
         }
@@ -152,42 +147,39 @@ namespace Website.Controllers
         [Authorize(Policy = "Account Policy")]
         public async Task<ActionResult> UpdateEmail(UpdatedEmail updatedEmail)
         {
-            if (ModelState.IsValid)
+            // Get the customer from the database based on the customer id from the claims via the access token
+            Customer customer = await userManager.FindByIdAsync(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+
+            // If the customer is found...
+            if (customer != null)
             {
-                // Get the customer from the database based on the customer id from the claims via the access token
-                Customer customer = await userManager.FindByIdAsync(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                // Update the new email in the database
+                IdentityResult result = await userManager.SetEmailAsync(customer, updatedEmail.Email);
 
 
-                // If the customer is found...
-                if (customer != null)
+                // If the update was successful, return the customer data with the new email
+                if (result.Succeeded)
                 {
-                    // Update the new email in the database
-                    IdentityResult result = await userManager.SetEmailAsync(customer, updatedEmail.Email);
-
-
-                    // If the update was successful, return the customer data with the new email
-                    if (result.Succeeded)
+                    return Ok(new CustomerDTO
                     {
-                        return Ok(new CustomerDTO
-                        {
-                            FirstName = customer.FirstName,
-                            LastName = customer.LastName,
-                            Email = updatedEmail.Email
-                        });
-                    }
-                    else
+                        FirstName = customer.FirstName,
+                        LastName = customer.LastName,
+                        Email = updatedEmail.Email
+                    });
+                }
+                else
+                {
+                    // The update was not successful. Return with errors
+                    foreach (IdentityError error in result.Errors)
                     {
-                        // The update was not successful. Return with errors
-                        foreach (IdentityError error in result.Errors)
+                        if (error.Code == "DuplicateEmail")
                         {
-                            if (error.Code == "DuplicateEmail")
-                            {
-                                error.Description = "The email address, \"" + updatedEmail.Email.ToLower() + "\", already exists with another Niche Shack account. Please use another email address.";
-                            }
-                            ModelState.AddModelError(error.Code, error.Description);
+                            error.Description = "The email address, \"" + updatedEmail.Email.ToLower() + "\", already exists with another Niche Shack account. Please use another email address.";
                         }
-                        return Conflict(ModelState);
+                        ModelState.AddModelError(error.Code, error.Description);
                     }
+                    return Conflict(ModelState);
                 }
             }
 
@@ -207,27 +199,24 @@ namespace Website.Controllers
         [Authorize(Policy = "Account Policy")]
         public async Task<ActionResult> UpdatePassword(UpdatedPassword updatedPassword)
         {
-            if (ModelState.IsValid)
+            // Get the customer from the database based on the customer id from the claims via the access token
+            Customer customer = await userManager.FindByIdAsync(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            // If the customer is found...
+            if (customer != null)
             {
-                // Get the customer from the database based on the customer id from the claims via the access token
-                Customer customer = await userManager.FindByIdAsync(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                // Update the password in the database
+                IdentityResult result = await userManager.ChangePasswordAsync(customer, updatedPassword.CurrentPassword, updatedPassword.NewPassword);
 
-                // If the customer is found...
-                if (customer != null)
+
+                // If the password was successfully updated, return ok
+                if (result.Succeeded)
                 {
-                    // Update the password in the database
-                    IdentityResult result = await userManager.ChangePasswordAsync(customer, updatedPassword.CurrentPassword, updatedPassword.NewPassword);
-
-
-                    // If the password was successfully updated, return ok
-                    if (result.Succeeded)
-                    {
-                        return Ok();
-                    }
+                    return Ok();
                 }
             }
 
-            return BadRequest();
+            return Conflict();
         }
 
 
@@ -237,34 +226,41 @@ namespace Website.Controllers
         // ..................................................................................Refresh.....................................................................
         [HttpGet]
         [Route("Refresh")]
-        public async Task<ActionResult> Refresh()
+        public async Task<ActionResult> Refresh(string refresh)
         {
-            ClaimsPrincipal principal = GetPrincipalFromToken(Request.Cookies["access"]);
+            string accessToken = GetAccessTokenFromHeader();
 
-
-            if (principal != null && Request.Cookies["refresh"] != null)
+            if (accessToken != null)
             {
-                string customerId = principal.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
+                ClaimsPrincipal principal = GetPrincipalFromToken(accessToken);
 
-                if (customerId != null)
+
+                if (principal != null && refresh != null)
                 {
-                    RefreshToken refreshToken = await unitOfWork.RefreshTokens.Get(x => x.Id == Request.Cookies["refresh"] && x.CustomerId == customerId);
-                    if (refreshToken != null)
+                    string customerId = principal.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
+
+                    if (customerId != null)
                     {
-                        // Remove the refresh token from the database
-                        unitOfWork.RefreshTokens.Remove(refreshToken);
-                        await unitOfWork.Save();
-
-                        if (DateTime.Compare(DateTime.UtcNow, refreshToken.Expiration) < 0)
+                        RefreshToken refreshToken = await unitOfWork.RefreshTokens.Get(x => x.Id == refresh && x.CustomerId == customerId);
+                        if (refreshToken != null)
                         {
-                            Customer customer = await userManager.FindByIdAsync(customerId);
+                            // Remove the refresh token from the database
+                            unitOfWork.RefreshTokens.Remove(refreshToken);
+                            await unitOfWork.Save();
 
-                            // Generate a new token and refresh token
-                            return Ok(await GenerateTokenData(customer, principal.Claims));
+                            if (DateTime.Compare(DateTime.UtcNow, refreshToken.Expiration) < 0)
+                            {
+                                Customer customer = await userManager.FindByIdAsync(customerId);
+
+                                // Generate a new token and refresh token
+                                return Ok(await GenerateTokenData<TokenData>(customer, principal.Claims));
+                            }
                         }
                     }
                 }
             }
+
+
             return Ok();
         }
 
@@ -276,13 +272,11 @@ namespace Website.Controllers
         // ..................................................................................Sign Out.....................................................................
         [HttpGet]
         [Route("SignOut")]
-        public async Task<ActionResult> SignOut()
+        public async Task<ActionResult> SignOut(string refresh)
         {
-            string refreshTokenString = Request.Cookies["refresh"];
-
-            if (refreshTokenString != null)
+            if (refresh != null)
             {
-                RefreshToken refreshToken = await unitOfWork.RefreshTokens.Get(x => x.Id == refreshTokenString);
+                RefreshToken refreshToken = await unitOfWork.RefreshTokens.Get(x => x.Id == refresh);
 
                 if (refreshToken != null)
                 {
@@ -291,9 +285,6 @@ namespace Website.Controllers
                 }
 
             }
-
-            Response.Cookies.Delete("access");
-            Response.Cookies.Delete("refresh");
 
             return NoContent();
         }
@@ -307,8 +298,10 @@ namespace Website.Controllers
 
 
         // ..................................................................................Generate Token Data.....................................................................
-        private async Task<TokenData> GenerateTokenData(Customer customer, IEnumerable<Claim> claims)
+        private async Task<T> GenerateTokenData<T>(Customer customer, IEnumerable<Claim> claims)
         {
+            ITokenData<T> tokenData;
+
             // Generate the access token
             JwtSecurityToken accessToken = GenerateAccessToken(claims);
 
@@ -316,19 +309,21 @@ namespace Website.Controllers
             RefreshToken refreshToken = await GenerateRefreshToken(customer.Id);
 
 
-            // Return the token data
-            return new TokenData
+            // If type of T is TokenData
+            // This will return access token and refresh token info
+            if (typeof(T) == typeof(TokenData))
             {
-                AccessTokenExpiration = accessToken.ValidTo.ToString() + " UTC",
-                AccessToken = new JwtSecurityTokenHandler().WriteToken(accessToken),
-                RefreshToken = refreshToken.Id,
-                Customer = new CustomerDTO
-                {
-                    FirstName = customer.FirstName,
-                    LastName = customer.LastName,
-                    Email = customer.Email
-                }
-            };
+                tokenData = (ITokenData<T>)new TokenData();
+            }
+            else
+            {
+                // Type of T is TokenDataDetail
+                // This will return access token, refresh token, and customer info
+                tokenData = (ITokenData<T>)new TokenDataDetail();
+            }
+
+
+            return tokenData.GetTokenData(accessToken, refreshToken, customer);
         }
 
 
@@ -425,6 +420,20 @@ namespace Website.Controllers
                 return null;
 
             return principal;
+        }
+
+
+
+        // ..................................................................................Get Token From Header.....................................................................
+        private string GetAccessTokenFromHeader()
+        {
+            StringValues value;
+            Request.Headers.TryGetValue("Authorization", out value);
+
+            if (value.Count == 0) return null;
+
+            Match result = Regex.Match(value, @"(?:Bearer\s)(.+)");
+            return result.Groups[1].Value;
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Website.Classes
                 return ValidationResult.Success;
             }
 
-            return new ValidationResult("Invalid name.");
+            return new ValidationResult("Name cannot contain any special characters and must have a length between 1 and 40 characters.");
         }
     }
 }
