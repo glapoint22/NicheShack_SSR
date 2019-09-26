@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Linq.Expressions;
+﻿using System.Linq;
 using Website.Interfaces;
 using Website.Models;
 
@@ -12,9 +10,9 @@ namespace Website.Classes
 
 
         // ..................................................................................Set Select.....................................................................
-        public Expression<Func<Category, CategoryDetailDTO>> SetSelect()
+        public IQueryable<CategoryDetailDTO> SetSelect(IQueryable<Category> source)
         {
-            return x => new CategoryDetailDTO
+            return source.Select(x => new CategoryDetailDTO
             {
                 Id = x.Id,
                 Name = x.Name,
@@ -27,7 +25,7 @@ namespace Website.Classes
                         Name = y.Name,
                         Icon = y.Icon
                     })
-            };
+            });
         }
     }
 }

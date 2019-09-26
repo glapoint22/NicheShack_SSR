@@ -30,8 +30,8 @@ namespace Website.Repositories
                 .ThenByDescending(x => x.Date)
                 .Where(x => x.ProductId == productId)
                 .Select(productReviewDTO)
-                .Skip((page - 1) * productReviewDTO.ReviewsPerPage)
-                .Take(productReviewDTO.ReviewsPerPage)
+                .Skip((page - 1) * productReviewDTO.GetReviewsPerPage())
+                .Take(productReviewDTO.GetReviewsPerPage())
                 .ToListAsync();
         }
 

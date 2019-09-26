@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Website.Models;
 
 namespace Website.Migrations
 {
     [DbContext(typeof(NicheShackContext))]
-    partial class NicheShackContextModelSnapshot : ModelSnapshot
+    [Migration("20190923165951_UpdatedProductContent")]
+    partial class UpdatedProductContent
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -369,26 +371,6 @@ namespace Website.Migrations
                     b.ToTable("OrderProducts");
                 });
 
-            modelBuilder.Entity("Website.Models.PriceIndex", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("Index");
-
-                    b.Property<string>("ProductContentId")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .IsUnicode(false);
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductContentId");
-
-                    b.ToTable("PriceIndices");
-                });
-
             modelBuilder.Entity("Website.Models.PriceRange", b =>
                 {
                     b.Property<int>("Id")
@@ -473,27 +455,21 @@ namespace Website.Migrations
 
             modelBuilder.Entity("Website.Models.ProductContent", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<string>("ProductId")
                         .HasMaxLength(10)
                         .IsUnicode(false);
 
                     b.Property<int>("ProductContentTypeId");
-
-                    b.Property<string>("ProductId")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .IsUnicode(false);
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(255)
                         .IsUnicode(false);
 
-                    b.HasKey("Id");
+                    b.HasKey("ProductId", "ProductContentTypeId")
+                        .HasName("PK_ProductContent");
 
                     b.HasIndex("ProductContentTypeId");
-
-                    b.HasIndex("ProductId");
 
                     b.ToTable("ProductContent");
                 });
@@ -793,15 +769,6 @@ namespace Website.Migrations
                         .WithMany("OrderProducts")
                         .HasForeignKey("OrderId")
                         .HasConstraintName("FK_OrderProducts_ProductOrders")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("Website.Models.PriceIndex", b =>
-                {
-                    b.HasOne("Website.Models.ProductContent", "ProductContent")
-                        .WithMany("PriceIndices")
-                        .HasForeignKey("ProductContentId")
-                        .HasConstraintName("FK_PriceIndices_ProductContent")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

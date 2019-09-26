@@ -23,7 +23,7 @@ namespace Website.Classes
         // ..................................................................................Select.....................................................................
         public static IQueryable<TOut> Select<T, TOut>(this IQueryable<T> source, ISelect<T, TOut> dto) where T : class where TOut : class
         {
-            return source.Select(dto.SetSelect());
+            return dto.SetSelect(source);
         }
     }
 }

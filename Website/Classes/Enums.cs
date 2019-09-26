@@ -8,21 +8,6 @@
             Image
         }
 
-        public enum ProductContentType
-        {
-            PDF,
-            DVD
-        }
-
-        public enum PricePointFrequency
-        {
-            SinglePayment,
-            Monthly,
-            Quarterly,
-            Yearly
-        }
-
-
         public enum OrderProductTypes
         {
             Physical,

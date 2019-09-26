@@ -19,17 +19,6 @@ namespace Website.Classes
         public string Hoplink { get; set; }
         public string Image { get; set; }
         public string UrlTitle { get; set; }
-        public List<KeyValuePair<string, string>> SortOptions => new List<KeyValuePair<string, string>>
-        {
-            new KeyValuePair<string, string>("Date Added", "date"),
-            new KeyValuePair<string, string>("Price: Low to High", "price-asc"),
-            new KeyValuePair<string, string>("Price: High to Low", "price-desc"),
-            new KeyValuePair<string, string>("Highest Rating", "rating"),
-            new KeyValuePair<string, string>("Title", "title")
-        };
-
-
-
 
         // Constructors
         public ListProductDTO() { }
@@ -39,6 +28,19 @@ namespace Website.Classes
             this.sortBy = sortBy;
         }
 
+
+        // .............................................................................Get Sort Options.....................................................................
+        public List<KeyValuePair<string, string>> GetSortOptions()
+        {
+            return new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("Date Added", "date"),
+                new KeyValuePair<string, string>("Price: Low to High", "price-asc"),
+                new KeyValuePair<string, string>("Price: High to Low", "price-desc"),
+                new KeyValuePair<string, string>("Highest Rating", "rating"),
+                new KeyValuePair<string, string>("Title", "title")
+            };
+        }
 
 
 

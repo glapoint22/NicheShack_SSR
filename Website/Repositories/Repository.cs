@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Website.Interfaces;
+using Website.Classes;
 
 namespace Website.Repositories
 {
@@ -54,7 +55,7 @@ namespace Website.Repositories
             return await context.Set<T>()
                 .AsNoTracking()
                 .Where(predicate)
-                .Select(dto.SetSelect())
+                .Select(dto)
                 .FirstOrDefaultAsync();
         }
 
@@ -67,7 +68,7 @@ namespace Website.Repositories
         {
             return await context.Set<T>()
                 .AsNoTracking()
-                .Select(dto.SetSelect())
+                .Select(dto)
                 .ToListAsync();
         }
 
@@ -76,7 +77,7 @@ namespace Website.Repositories
             return await context.Set<T>()
                 .AsNoTracking()
                 .Where(predicate)
-                .Select(dto.SetSelect())
+                .Select(dto)
                 .ToListAsync();
         }
 

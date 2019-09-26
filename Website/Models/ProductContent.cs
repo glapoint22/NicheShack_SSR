@@ -1,13 +1,22 @@
-﻿namespace Website.Models
+﻿using System.Collections.Generic;
+
+namespace Website.Models
 {
     public class ProductContent
     {
-        public int Id { get; set; }
+        public ProductContent()
+        {
+            PriceIndices = new HashSet<PriceIndex>();
+        }
+
+        public string Id { get; set; }
         public string ProductId { get; set; }
-        public int Type { get; set; }
+        public int ProductContentTypeId { get; set; }
         public string Title { get; set; }
-        public string PriceIndices { get; set; }
+
 
         public virtual Product Product { get; set; }
+        public virtual ProductContentType ProductContentType { get; set; }
+        public virtual ICollection<PriceIndex> PriceIndices { get; set; }
     }
 }

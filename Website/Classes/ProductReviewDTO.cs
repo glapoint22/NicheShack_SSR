@@ -21,16 +21,6 @@ namespace Website.Classes
         public int Likes { get; set; }
         public int Dislikes { get; set; }
         public string ProductId { get; set; }
-        public KeyValuePair<string, string>[] SortOptions => new KeyValuePair<string, string>[]
-        {
-            new KeyValuePair<string, string>("High to Low Rating", "high-low-rating"),
-            new KeyValuePair<string, string>("Low to High Rating", "low-high-rating"),
-            new KeyValuePair<string, string>("Newest to Oldest", "new-old"),
-            new KeyValuePair<string, string>("Oldest to Newest", "old-new"),
-            new KeyValuePair<string, string>("Most helpful", "most-helpful")
-        };
-
-        public int ReviewsPerPage => 10;
 
 
 
@@ -43,11 +33,36 @@ namespace Website.Classes
         }
 
 
+        // ..................................................................................Get Reviews Per Page.....................................................................
+        public int GetReviewsPerPage()
+        {
+            return 10;
+        }
+
+
+
+
+
+        // ..................................................................................Get Sort Options.....................................................................
+        public List<KeyValuePair<string, string>> GetSortOptions()
+        {
+            return new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("High to Low Rating", "high-low-rating"),
+                new KeyValuePair<string, string>("Low to High Rating", "low-high-rating"),
+                new KeyValuePair<string, string>("Newest to Oldest", "new-old"),
+                new KeyValuePair<string, string>("Oldest to Newest", "old-new"),
+                new KeyValuePair<string, string>("Most helpful", "most-helpful")
+            };
+        }
+
+
+
 
         // ..................................................................................Set Select.....................................................................
-        public Expression<Func<ProductReview, ProductReviewDTO>> SetSelect()
+        public IQueryable<ProductReviewDTO> SetSelect(IQueryable<ProductReview> source)
         {
-            return x => new ProductReviewDTO
+            return source.Select(x => new ProductReviewDTO
             {
                 Id = x.Id,
                 Title = x.Title,
@@ -59,7 +74,7 @@ namespace Website.Classes
                 Text = x.Text,
                 Likes = x.Likes,
                 Dislikes = x.Dislikes
-            };
+            });
         }
 
 

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using System.Linq;
 using Website.Interfaces;
 using Website.Models;
 using static Website.Classes.Enums;
@@ -15,14 +14,14 @@ namespace Website.Classes
 
 
         // ..................................................................................Set Select.....................................................................
-        public Expression<Func<ProductMedia, ProductMediaDTO>> SetSelect()
+        public IQueryable<ProductMediaDTO> SetSelect(IQueryable<ProductMedia> source)
         {
-            return x => new ProductMediaDTO
+            return source.Select(x => new ProductMediaDTO
             {
                 Url = x.Url,
                 Thumbnail = x.Thumbnail,
                 Type = ((ProductMediaType)x.Type).ToString("g")
-            };
+            });
         }
     }
 }

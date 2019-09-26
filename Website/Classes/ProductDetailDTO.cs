@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using System.Linq;
 using Website.Interfaces;
 using Website.Models;
 
@@ -27,9 +26,9 @@ namespace Website.Classes
 
 
         // ..................................................................................Set Select.....................................................................
-        public Expression<Func<Product, ProductDetailDTO>> SetSelect()
+        public IQueryable<ProductDetailDTO> SetSelect(IQueryable<Product> source)
         {
-            return x => new ProductDetailDTO
+            return source.Select(x => new ProductDetailDTO
             {
                 Id = x.Id,
                 Title = x.Title,
@@ -47,7 +46,7 @@ namespace Website.Classes
                 ThreeStars = x.ThreeStars,
                 FourStars = x.FourStars,
                 FiveStars = x.FiveStars
-            };
+            });
         }
     }
 }

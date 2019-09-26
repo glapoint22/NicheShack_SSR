@@ -152,11 +152,10 @@ namespace Website.Controllers
                 // If succeeded, return with the new updated name
                 if (result.Succeeded)
                 {
-                    return Ok(new CustomerDTO
+                    return Ok(new 
                     {
-                        FirstName = customer.FirstName,
-                        LastName = customer.LastName,
-                        Email = customer.Email
+                        customer.FirstName,
+                        customer.LastName
                     });
                 }
             }
@@ -192,11 +191,9 @@ namespace Website.Controllers
                 // If the update was successful, return the customer data with the new email
                 if (result.Succeeded)
                 {
-                    return Ok(new CustomerDTO
+                    return Ok(new 
                     {
-                        FirstName = customer.FirstName,
-                        LastName = customer.LastName,
-                        Email = updatedEmail.Email
+                        updatedEmail.Email
                     });
                 }
                 else

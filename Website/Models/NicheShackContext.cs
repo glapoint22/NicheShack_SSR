@@ -25,9 +25,11 @@ namespace Website.Models
         public virtual DbSet<ListProduct> ListProducts { get; set; }
         public virtual DbSet<Niche> Niches { get; set; }
         public virtual DbSet<OrderProduct> OrderProducts { get; set; }
+        public virtual DbSet<PriceIndex> PriceIndices { get; set; }
         public virtual DbSet<PriceRange> PriceRanges { get; set; }
         public virtual DbSet<Product> Products { get; set; }
         public virtual DbSet<ProductContent> ProductContent { get; set; }
+        public virtual DbSet<ProductContentType> ProductContentTypes { get; set; }
         public virtual DbSet<ProductFilter> ProductFilters { get; set; }
         public virtual DbSet<ProductMedia> ProductMedia { get; set; }
         public virtual DbSet<ProductOrder> ProductOrders { get; set; }
@@ -256,6 +258,25 @@ namespace Website.Models
             });
 
 
+            // PriceIndices
+            modelBuilder.Entity<PriceIndex>(entity =>
+            {
+                entity.Property(e => e.ProductContentId)
+                    .HasMaxLength(10)
+                    .IsRequired()
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Index)
+                   .IsRequired();
+
+                entity.HasOne(d => d.ProductContent)
+                    .WithMany(p => p.PriceIndices)
+                    .HasForeignKey(d => d.ProductContentId)
+                    .HasConstraintName("FK_PriceIndices_ProductContent");
+            });
+
+
+
             // PriceRanges
             modelBuilder.Entity<PriceRange>(entity =>
             {
@@ -317,20 +338,20 @@ namespace Website.Models
             // ProductContent
             modelBuilder.Entity<ProductContent>(entity =>
             {
+                entity.Property(e => e.Id)
+                    .HasMaxLength(10)
+                    .IsUnicode(false)
+                    .ValueGeneratedNever();
+
                 entity.Property(e => e.ProductId)
                     .HasMaxLength(10)
                     .IsRequired()
                     .IsUnicode(false);
 
-                entity.Property(e => e.Type)
+                entity.Property(e => e.ProductContentTypeId)
                     .IsRequired();
 
                 entity.Property(e => e.Title)
-                    .HasMaxLength(255)
-                    .IsUnicode(false)
-                    .IsRequired();
-
-                entity.Property(e => e.PriceIndices)
                     .HasMaxLength(255)
                     .IsUnicode(false)
                     .IsRequired();
@@ -339,6 +360,27 @@ namespace Website.Models
                     .WithMany(p => p.ProductContent)
                     .HasForeignKey(d => d.ProductId)
                     .HasConstraintName("FK_ProductContent_Products");
+
+                entity.HasOne(d => d.ProductContentType)
+                    .WithMany(p => p.ProductContent)
+                    .HasForeignKey(d => d.ProductContentTypeId)
+                    .HasConstraintName("FK_ProductContent_ProductContentTypes");
+            });
+
+
+
+            // ProductContentTypes
+            modelBuilder.Entity<ProductContentType>(entity =>
+            {
+                entity.Property(e => e.Name)
+                    .HasMaxLength(30)
+                    .IsRequired()
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Image)
+                    .HasMaxLength(255)
+                    .IsRequired()
+                    .IsUnicode(false);
             });
 
 
@@ -437,7 +479,9 @@ namespace Website.Models
                     .IsRequired()
                     .IsUnicode(false);
 
-                entity.Property(e => e.Frequency)
+                entity.Property(e => e.Description)
+                    .HasMaxLength(50)
+                    .IsUnicode(false)
                     .IsRequired();
 
                 entity.HasOne(d => d.Product)

@@ -87,7 +87,7 @@ namespace Website.Controllers
                 }).ToList() : null,
                 isOwner,
                 isCollaborator = collaborators.Any(x => x.CustomerId == customerId && x.ListId == selectedListId && !x.IsOwner),
-                new ListProductDTO().SortOptions,
+                sortOptions = new ListProductDTO().GetSortOptions(),
                 ownerName = collaborators.Where(x => x.IsOwner).Select(x => x.Name).SingleOrDefault()
             });
         }

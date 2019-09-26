@@ -154,7 +154,7 @@ namespace Website.Repositories
             // Rating 4 and up
             if (productRatings.Count(x => x >= 4) > 0)
             {
-                ratingOptions.Add(new QueryFilterOption
+                ratingOptions.Add(new RatingOption
                 {
                     Id = "4"
                 });
@@ -165,7 +165,7 @@ namespace Website.Repositories
             // Rating 3 and up
             if (productRatings.Count(x => x >= 3 && x < 4) > 0)
             {
-                ratingOptions.Add(new QueryFilterOption
+                ratingOptions.Add(new RatingOption
                 {
                     Id = "3"
                 });
@@ -176,7 +176,7 @@ namespace Website.Repositories
             // Rating 2 and up
             if (productRatings.Count(x => x >= 2 && x < 3) > 0)
             {
-                ratingOptions.Add(new QueryFilterOption
+                ratingOptions.Add(new RatingOption
                 {
                     Id = "2"
                 });
@@ -188,7 +188,7 @@ namespace Website.Repositories
             // Rating 1 and up
             if (productRatings.Count(x => x >= 1 && x < 2) > 0)
             {
-                ratingOptions.Add(new QueryFilterOption
+                ratingOptions.Add(new RatingOption
                 {
                     Id = "1"
                 });

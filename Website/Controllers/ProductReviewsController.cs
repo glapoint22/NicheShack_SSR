@@ -38,12 +38,12 @@ namespace Website.Controllers
         // ................................................................................Get Reviews Detail...................................................................
         [Route("ReviewsDetail")]
         [HttpGet]
-        public async Task<ActionResult> GetReviewsDetail(string id, string sortBy, int page = 1)
+        public async Task<ActionResult> GetReviewsDetail(string productId, string sortBy, int page = 1)
         {
             ProductReviewDTO productReviewDTO = new ProductReviewDTO();
 
             // Get the product that is in review
-            var product = await unitOfWork.Products.Get(x => x.Id == id, x => new
+            var product = await unitOfWork.Products.Get(x => x.Id == productId, x => new
             {
                 id = x.Id,
                 title = x.Title,
@@ -71,8 +71,8 @@ namespace Website.Controllers
                     positiveReview = await unitOfWork.ProductReviews.GetPositiveReview(product.id),
                     negativeReview = await unitOfWork.ProductReviews.GetNegativeReview(product.id),
                     reviews = await unitOfWork.ProductReviews.GetReviews(product.id, sortBy, page),
-                    productReviewDTO.SortOptions,
-                    productReviewDTO.ReviewsPerPage
+                    sortOptions = productReviewDTO.GetSortOptions(),
+                    reviewsPerPage = productReviewDTO.GetReviewsPerPage()
                 });
             }
 
@@ -215,7 +215,7 @@ namespace Website.Controllers
         [HttpPut]
         [Route("UpdateReviewName")]
         [Authorize(Policy = "Account Policy")]
-        public async Task<ActionResult> UpdateReviewName(string updatedReviewName)
+        public async Task<ActionResult> UpdateReviewName(UpdatedReviewName updatedReviewName)
         {
             // Get the customer from the database based on the customer id from the claims via the access token
             Customer customer = await unitOfWork.Customers.Get(User.FindFirst(ClaimTypes.NameIdentifier).Value);
@@ -223,7 +223,7 @@ namespace Website.Controllers
             // If the customer is found, update the review name (user name for reviews)
             if (customer != null)
             {
-                customer.ReviewName = updatedReviewName;
+                customer.ReviewName = updatedReviewName.ReviewName;
 
                 // Update the name in the database
                 unitOfWork.Customers.Update(customer);

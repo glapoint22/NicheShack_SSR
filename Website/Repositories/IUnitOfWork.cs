@@ -20,6 +20,7 @@ namespace Website.Repositories
         IRepository<RefreshToken> RefreshTokens { get; }
         IRepository<ListCollaborator> Collaborators { get; }
         IRepository<Customer> Customers { get; }
+        IRepository<ListProduct> ListProducts { get; }
 
 
         Task<int> Save();

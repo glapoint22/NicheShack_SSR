@@ -19,6 +19,7 @@ namespace Website.Repositories
         public IRepository<RefreshToken> RefreshTokens { get; private set; }
         public IRepository<ListCollaborator> Collaborators { get; }
         public IRepository<Customer> Customers { get; }
+        public IRepository<ListProduct> ListProducts { get; }
 
 
         // Declare the Nicheshack context
@@ -41,6 +42,7 @@ namespace Website.Repositories
             RefreshTokens = new Repository<RefreshToken>(context);
             Collaborators = new Repository<ListCollaborator>(context);
             Customers = new Repository<Customer>(context);
+            ListProducts = new Repository<ListProduct>(context);
         }
 
 

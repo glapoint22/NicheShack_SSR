@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Website.Classes;
 using Website.Repositories;
-using static Website.Classes.Enums;
 
 namespace Website.Controllers
 {
@@ -52,7 +50,7 @@ namespace Website.Controllers
             // Get the product based on the id
             ProductDetailDTO product = await unitOfWork.Products.Get(x => x.Id == id, new ProductDetailDTO());
             
-            // If the product is found in the database, return the product and other information about the product
+            // If the product is found in the database, return the product with other product details
             if (product != null)
             {
                 var response = new
@@ -61,17 +59,17 @@ namespace Website.Controllers
                     media = await unitOfWork.Media.GetCollection(x => x.ProductId == product.Id, new ProductMediaDTO()),
                     content = await unitOfWork.ProductContent.GetCollection(x => x.ProductId == product.Id, x => new
                     {
-                        Type = ((ProductContentType)x.Type).ToString("g"),
+                        Type = new {
+                            x.ProductContentType.Name,
+                            x.ProductContentType.Image
+                        },
                         x.Title,
-                        PriceIndices = x.PriceIndices.Split(',', StringSplitOptions.None)
+                        PriceIndices = x.PriceIndices.Select(y => y.Index).ToList()
                     }),
-                    pricePoints = await unitOfWork.PricePoints.GetCollection(x => x.ProductId == product.Id, x => new {
-                        x.Price,
-                        Frequency = ((PricePointFrequency)x.Frequency).ToString("g")
-                    }),
+                    pricePoints = await unitOfWork.PricePoints.GetCollection(x => x.ProductId == product.Id, x => string.Format(x.Description, x.Price)),
                     reviews = await unitOfWork.ProductReviews.GetReviews(product.Id, sortBy, 1),
-                    productReviewDTO.SortOptions,
-                    productReviewDTO.ReviewsPerPage
+                    sortOptions = productReviewDTO.GetSortOptions(),
+                    reviewsPerPage = productReviewDTO.GetReviewsPerPage()
                 };
 
                 return Ok(response);
@@ -104,8 +102,8 @@ namespace Website.Controllers
                 totalProducts = products.Count(),
                 categories = await unitOfWork.Categories.GetQueriedCategories(queryParams, products),
                 filters = await unitOfWork.Products.GetProductFilters(queryParams, products),
-                productDTO.NumProductsPerPageOptions,
-                sortOptions = query != string.Empty ? productDTO.SearchSortOptions : productDTO.BrowseSortOptions
+                numProductsPerPageOptions = productDTO.GetNumProductsPerPageOptions(),
+                sortOptions = query != string.Empty ? productDTO.GetSearchSortOptions() : productDTO.GetBrowseSortOptions()
             };
 
             return Ok(response);

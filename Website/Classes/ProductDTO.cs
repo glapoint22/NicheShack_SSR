@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using Website.Interfaces;
 using Website.Models;
 
@@ -20,33 +18,7 @@ namespace Website.Classes
         public double MinPrice { get; set; }
         public double MaxPrice { get; set; }
         public string Image { get; set; }
-        public List<KeyValuePair<string, string>> NumProductsPerPageOptions => new List<KeyValuePair<string, string>>
-        {
-            new KeyValuePair<string, string>("24", "24"),
-            new KeyValuePair<string, string>("48", "48"),
-            new KeyValuePair<string, string>("72", "72"),
-            new KeyValuePair<string, string>("96", "96")
-        };
 
-        public List<KeyValuePair<string, string>> BrowseSortOptions => new List<KeyValuePair<string, string>>
-        {
-            new KeyValuePair<string, string>("Price: Low to High", "price-asc"),
-            new KeyValuePair<string, string>("Price: High to Low", "price-desc"),
-            new KeyValuePair<string, string>("Highest Rating", "rating")
-        };
-
-
-        public List<KeyValuePair<string, string>> SearchSortOptions
-        {
-            get
-            {
-                List<KeyValuePair<string, string>> options = new List<KeyValuePair<string, string>>();
-                options.Add(new KeyValuePair<string, string>("Best Match", "best-match"));
-                options.AddRange(BrowseSortOptions);
-
-                return options;
-            }
-        }
 
 
         // Constructors
@@ -61,12 +33,60 @@ namespace Website.Classes
 
 
 
+        // ..............................................................................Get Num Products Per Page Options.................................................................
+        public List<KeyValuePair<string, string>> GetNumProductsPerPageOptions()
+        {
+            return new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("24", "24"),
+                new KeyValuePair<string, string>("48", "48"),
+                new KeyValuePair<string, string>("72", "72"),
+                new KeyValuePair<string, string>("96", "96")
+            };
+        }
+
+
+
+
+
+
+
+        // ..............................................................................Get Browse Sort Options.................................................................
+        public List<KeyValuePair<string, string>> GetBrowseSortOptions()
+        {
+            return new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("Price: Low to High", "price-asc"),
+                new KeyValuePair<string, string>("Price: High to Low", "price-desc"),
+                new KeyValuePair<string, string>("Highest Rating", "rating")
+            };
+        }
+
+
+
+
+
+
+
+        // ..............................................................................Get Search Sort Options.................................................................
+        public List<KeyValuePair<string, string>> GetSearchSortOptions()
+        {
+            List<KeyValuePair<string, string>> options = new List<KeyValuePair<string, string>>();
+            options.Add(new KeyValuePair<string, string>("Best Match", "best-match"));
+            options.AddRange(GetBrowseSortOptions());
+
+            return options;
+        }
+
+
+
+
 
 
         // ..................................................................................Set Select.....................................................................
-        public Expression<Func<Product, ProductDTO>> SetSelect()
+        public IQueryable<ProductDTO> SetSelect(IQueryable<Product> source)
         {
-            return x => new ProductDTO
+            return source.Select(x => new ProductDTO
             {
                 Id = x.Id,
                 Title = x.Title,
@@ -76,7 +96,7 @@ namespace Website.Classes
                 MinPrice = x.MinPrice,
                 MaxPrice = x.MaxPrice,
                 Image = x.Image
-            };
+            });
         }
 
 
